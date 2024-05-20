@@ -88,8 +88,8 @@
       odometer.update(newCount);
     }
 
-    function fetchCountFromServer() {
-      fetch('https://api.communitrics.com/counter')
+    function fetchCount() {
+      fetch('/counter')
       .then(response => response.json())
       .then(data => {
         updateCount(data.count);
@@ -99,8 +99,8 @@
       });
     }
 
-    function incrementCountOnServer() {
-      fetch('https://api.communitrics.com/counter', {
+    function incrementCount() {
+      fetch('/counter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -121,13 +121,13 @@
       });
     }
 
-    fetchCountFromServer();
+    fetchCount();
 
     incrementButton.addEventListener('click', () => {
-      incrementCountOnServer();
+      incrementCount();
     });
 
-    setInterval(fetchCountFromServer, 3000);
+    setInterval(fetchCount, 3000);
   </script>
 </body>
 </html>
