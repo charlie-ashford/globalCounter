@@ -85,6 +85,10 @@
     }
 
     function updateCount(newCount) {
+      if (!odometer) {
+        console.error('Odometer is not initialized');
+        return;
+      }
       odometer.update(newCount);
     }
 
@@ -92,7 +96,11 @@
       fetch('/counter')
       .then(response => response.json())
       .then(data => {
-        updateCount(data.count);
+        if (!odometer) {
+          initializeOdometer(data.count);
+        } else {
+          updateCount(data.count);
+        }
       })
       .catch(error => {
         console.error('Error getting count from the server:', error);
