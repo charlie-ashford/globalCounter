@@ -77,67 +77,67 @@
  <script>
    const countElement = document.getElementById('count');
    const incrementButton = document.getElementById('increment');
-  let count = 0;
-  let odometer;
+   let count = 0;
+   let odometer;
 
-  function initializeOdometer(initialCount) {
-      odometer = new Odometer({ el: countElement, value: initialCount, duration: 500 });
-      odometer.render();
-  }
+   function initializeOdometer(initialCount) {
+     odometer = new Odometer({ el: countElement, value: initialCount, duration: 500 });
+     odometer.render();
+   }
 
-  function updateCount(newCount) {
-      odometer.update(newCount);
-  }
+   function updateCount(newCount) {
+     odometer.update(newCount);
+   }
 
-  async function sendCountToServer() {
-      try {
-          const response = await fetch('https://api.communitrics.com/counter', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ count })
-          });
+   function sendCountToServer() {
+     fetch('https://api.communitrics.com/counter', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify({ count })
+     })
+     .then(response => {
+       if (!response.ok) {
+         throw new Error('Network response was not ok');
+       }
+     })
+     .catch(error => {
+       console.error('Error updating count on the server:', error);
+     });
+   }
 
-          if (!response.ok) {
-              throw new Error('Network response was not ok');
-          }
-      } catch (error) {
-          console.error('Error updating count on the server:', error);
-      }
-  }
+   function fetchCountFromServer() {
+     fetch('https://api.communitrics.com/counter')
+     .then(response => response.json())
+     .then(data => {
+       if (data.count !== count) {
+         count = data.count;
+         updateCount(count);
+       }
+     })
+     .catch(error => {
+       console.error('Error getting count from the server:', error);
+     });
+   }
 
-  async function fetchCountFromServer() {
-      try {
-          const response = await fetch('https://api.communitrics.com/counter');
-          const data = await response.json();
-          if (data.count !== count) {
-              count = data.count;
-              updateCount(count);
-          }
-      } catch (error) {
-          console.error('Error getting count from the server:', error);
-      }
-  }
+   fetch('https://api.communitrics.com/counter')
+   .then(response => response.json())
+   .then(data => {
+     count = data.count;
+     initializeOdometer(count);
+   })
+   .catch(error => {
+     console.error('Error getting initial count from the server:', error);
+   });
 
-  (async () => {
-      try {
-          const response = await fetch('https://api.communitrics.com/counter');
-          const data = await response.json();
-          count = data.count;
-          initializeOdometer(count);
-      } catch (error) {
-          console.error('Error getting initial count from the server:', error);
-      }
-  })();
+   incrementButton.addEventListener('click', () => {
+     count++;
+     updateCount(count);
+     sendCountToServer();
+   });
 
-  incrementButton.addEventListener('click', () => {
-      count++;
-      updateCount(count);
-      sendCountToServer();
-  });
-
-  setInterval(fetchCountFromServer, 1000);
+   setInterval(fetchCountFromServer, 3000);
  </script>
 </body>
 </html>
