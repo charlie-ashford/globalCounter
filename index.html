@@ -95,7 +95,7 @@
     }
 
     function fetchCount() {
-      fetch('http://api.communitrics.com/counter')
+      fetch('https://api.communitrics.com/counter')
         .then(response => response.json())
         .then(data => {
           console.log('Fetched count from server:', data.count);
@@ -111,7 +111,7 @@
     }
 
     function incrementCount() {
-      fetch('http://api.communitrics.com/counter', {
+      fetch('https://api.communitrics.com/counter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
