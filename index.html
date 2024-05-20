@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Counter</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="https://github.hubspot.com/odometer/themes/odometer-theme-minimal.css">
+ <style>
+   body {
+     font-family: 'Inter', sans-serif;
+     background-color: #121212;
+     color: #f0f0f0;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     height: 100vh;
+     margin: 0;
+     transition: background-color 0.3s ease;
+   }
+   .container {
+     text-align: center;
+   }
+   h1 {
+     font-size: 3rem;
+     margin-bottom: 1rem;
+   }
+   .odometer {
+     font-size: 6rem;
+     font-weight: 700;
+     margin-bottom: 2rem;
+   }
+   button {
+     font-family: 'Inter', sans-serif;
+     font-size: 1.2rem;
+     padding: 0.5rem 1rem;
+     background-color: #3f51b5;
+     color: #f0f0f0;
+     border: none;
+     border-radius: 0.25rem;
+     cursor: pointer;
+     transition: background-color 0.3s ease;
+     margin-bottom: 1rem;
+   }
+   button:hover {
+     background-color: #5c6bc0;
+   }
+   a {
+     text-decoration: underline;
+     color: inherit;
+     font-weight: bold;
+   }
+   .source-link {
+     margin-top: 10px;
+   }
+   @media (prefers-color-scheme: light) {
+     body {
+       background-color: #f0f0f0;
+       color: #121212;
+     }
+   }
+ </style>
+</head>
+<body>
+ <div class="container">
+   <div class="odometer" id="count">0</div>
+   <div>
+     <button id="increment">Add 1</button>
+   </div>
+   <div class="source-link">
+     An <a href="https://github.com/charlie-ashford/globalCounter" target="_blank" rel="noopener noreferrer">open-source</a> global counter
+   </div>
+ </div>
+ <script src="https://github.hubspot.com/odometer/odometer.js"></script>
+ <script>
+   const countElement = document.getElementById('count');
+   const incrementButton = document.getElementById('increment');
+   let count = 0;
+   const odometer = new Odometer({ el: countElement, value: count, duration: 500 });
+   function updateCount() {
+     odometer.update(count);
+   }
+   function sendCountToServer() {
+     fetch('https://api.communitrics.com/counter', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify({ count })
+     })
+     .then(response => {
+       if (!response.ok) {
+         throw new Error('Network response was not ok');
+       }
+     })
+     .catch(error => {
+       console.error('Error updating count on the server:', error);
+     });
+   }
+   fetch('https://api.communitrics.com/counter')
+   .then(response => response.json())
+   .then(data => {
+     count = data.count;
+     updateCount();
+   })
+   .catch(error => {
+     console.error('Error getting initial count from the server:', error);
+   });
+   incrementButton.addEventListener('click', () => {
+     count++;
+     updateCount();
+     sendCountToServer();
+   });
+ </script>
+</body>
+</html>
