@@ -80,6 +80,7 @@
     let odometer;
 
     function initializeOdometer(initialCount) {
+      console.log('Initializing odometer with count:', initialCount);
       odometer = new Odometer({ el: countElement, value: initialCount, duration: 500 });
       odometer.render();
     }
@@ -89,44 +90,47 @@
         console.error('Odometer is not initialized');
         return;
       }
+      console.log('Updating count to:', newCount);
       odometer.update(newCount);
     }
 
     function fetchCount() {
-      fetch('/counter')
-      .then(response => response.json())
-      .then(data => {
-        if (!odometer) {
-          initializeOdometer(data.count);
-        } else {
-          updateCount(data.count);
-        }
-      })
-      .catch(error => {
-        console.error('Error getting count from the server:', error);
-      });
+      fetch('http://localhost:3000/counter')
+        .then(response => response.json())
+        .then(data => {
+          console.log('Fetched count from server:', data.count);
+          if (!odometer) {
+            initializeOdometer(data.count);
+          } else {
+            updateCount(data.count);
+          }
+        })
+        .catch(error => {
+          console.error('Error getting count from the server:', error);
+        });
     }
 
     function incrementCount() {
-      fetch('/counter', {
+      fetch('http://localhost:3000/counter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ action: 'increment' })
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        updateCount(data.count);
-      })
-      .catch(error => {
-        console.error('Error updating count on the server:', error);
-      });
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Incremented count to:', data.count);
+          updateCount(data.count);
+        })
+        .catch(error => {
+          console.error('Error updating count on the server:', error);
+        });
     }
 
     fetchCount();
