@@ -77,21 +77,17 @@
   <script>
     const countElement = document.getElementById('count');
     const incrementButton = document.getElementById('increment');
-    let odometer;
+    let odometerInitialized = false;
 
     function initializeOdometer(initialCount) {
       console.log('Initializing odometer with count:', initialCount);
-      odometer = new Odometer({ el: countElement, value: initialCount, duration: 500 });
-      odometer.render();
+      countElement.innerHTML = initialCount;
+      odometerInitialized = true;
     }
 
     function updateCount(newCount) {
-      if (!odometer) {
-        console.error('Odometer is not initialized');
-        return;
-      }
       console.log('Updating count to:', newCount);
-      odometer.update(newCount);
+      countElement.innerHTML = newCount;
     }
 
     function fetchCount() {
@@ -99,7 +95,7 @@
         .then(response => response.json())
         .then(data => {
           console.log('Fetched count from server:', data.count);
-          if (!odometer) {
+          if (!odometerInitialized) {
             initializeOdometer(data.count);
           } else {
             updateCount(data.count);
