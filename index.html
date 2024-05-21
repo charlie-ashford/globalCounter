@@ -78,18 +78,15 @@
     const countElement = document.getElementById('count');
     const incrementButton = document.getElementById('increment');
     let odometerInitialized = false;
-    let localCount = 0;
 
     function initializeOdometer(initialCount) {
       console.log('Initializing odometer with count:', initialCount);
-      localCount = initialCount;
       countElement.innerHTML = initialCount;
       odometerInitialized = true;
     }
 
     function updateCount(newCount) {
       console.log('Updating count to:', newCount);
-      localCount = newCount;
       countElement.innerHTML = newCount;
     }
 
@@ -110,8 +107,6 @@
     }
 
     function incrementCount() {
-      localCount++;
-      countElement.innerHTML = localCount;
       fetch('https://api.communitrics.com/counter', {
         method: 'POST',
         headers: {
@@ -140,7 +135,7 @@
       incrementCount();
     });
 
-    setInterval(fetchCount, 2000);
+    setInterval(fetchCount, 3000);
   </script>
 </body>
 </html>
