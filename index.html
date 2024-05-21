@@ -114,19 +114,18 @@
         },
         body: JSON.stringify({ action: 'increment' })
       })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Incremented count to:', data.count);
-          updateCount(data.count);
-        })
-        .catch(error => {
-          console.error('Error updating count on the server:', error);
-        });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Incremented count to:', data.count);
+      })
+      .catch(error => {
+        console.error('Error updating count on the server:', error);
+      });
     }
 
     fetchCount();
@@ -135,7 +134,7 @@
       incrementCount();
     });
 
-    setInterval(fetchCount, 3000);
+    setInterval(fetchCount, 2000); 
   </script>
 </body>
 </html>
