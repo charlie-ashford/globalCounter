@@ -129,40 +129,19 @@
           .catch(error => console.error('Error fetching count:', error));
       }
 
-      function displayError(message, remainingTime) {
-        if (errorMessageTimeout) {
-          clearInterval(errorMessageTimeout);
+      let errorTimeout;
+      
+      function displayError(message) {
+        if (errorTimeout) {
+          clearTimeout(errorTimeout);
         }
-        if (errorHideTimeout) {
-          clearTimeout(errorHideTimeout);
-        }
-
-        function formatTime(milliseconds) {
-          const totalSeconds = Math.floor(milliseconds / 1000);
-          const hours = Math.floor(totalSeconds / 3600);
-          const minutes = Math.floor((totalSeconds % 3600) / 60);
-          const seconds = totalSeconds % 60;
-          return `${hours > 0 ? hours + ' hours, ' : ''}${minutes > 0 ? minutes + ' minutes, ' : ''}${seconds} seconds`;
-        }
-
-        errorMessageElement.innerText = `${message} (${formatTime(remainingTime)})`;
+        errorMessageElement.innerText = message;
         errorMessageElement.style.display = 'block';
-
-        errorMessageTimeout = setInterval(() => {
-          remainingTime -= 1000;
-          if (remainingTime <= 0) {
-            clearInterval(errorMessageTimeout);
-          } else {
-            errorMessageElement.innerText = `${message} (${formatTime(remainingTime)})`;
-          }
-        }, 1000);
-
-        errorHideTimeout = setTimeout(() => {
+        errorTimeout = setTimeout(() => {
           errorMessageElement.style.display = 'none';
-          clearInterval(errorMessageTimeout);
-        }, 15000);
+        }, 15000); 
       }
-
+    
       function incrementCount(amount, button) {
         button.disabled = true;
         fetch('https://api.communitrics.com/counter', {
