@@ -77,18 +77,18 @@
     <div class="odometer" id="count">0</div>
     <div class="button-row">
       <button id="increment">Add 1</button>
-      <button id="increment-10" disabled>Add 10</button>
-      <button id="increment-100" disabled>Add 100</button>
+      <button id="increment-10">Add 10</button>
+      <button id="increment-100">Add 100</button>
     </div>
     <div class="button-row">
-      <button id="increment-1000" disabled>Add 1,000</button>
-      <button id="increment-5000" disabled>Add 5,000</button>
-      <button id="increment-10000" disabled>Add 10,000</button>
-      <button id="increment-50000" disabled>Add 50,000</button>
+      <button id="increment-1000">Add 1,000</button>
+      <button id="increment-5000">Add 5,000</button>
+      <button id="increment-50000">Add 50,000</button>
     </div>
     <div class="button-row">
-      <button id="increment-100000" disabled>Add 100,000</button>
-      <button id="increment-500000" disabled>Add 500,000</button>
+      <button id="increment-10000">Add 10,000</button>
+      <button id="increment-100000">Add 100,000</button>
+      <button id="increment-500000">Add 500,000</button>
     </div>
     <div class="source-link">
       An <a href="https://github.com/charlie-ashford/globalCounter" target="_blank" rel="noopener noreferrer">open-source</a> global counter
@@ -109,14 +109,14 @@
     let odometerInitialized = false;
     let lastIncrementTime = 0;
     const cooldowns = {
-      'increment-10': 5000,
-      'increment-100': 10000,
-      'increment-1000': 30000,
+      'increment-10': 5000, 
+      'increment-100': 10000, 
+      'increment-1000': 30000, 
       'increment-5000': 60000,
-      'increment-10000': 120000, 
+      'increment-10000': 120000,
       'increment-50000': 300000, 
-      'increment-100000': 600000,
-      'increment-500000': 1800000
+      'increment-100000': 600000, 
+      'increment-500000': 1800000 
     };
 
     function initializeOdometer(initialCount) {
@@ -139,6 +139,9 @@
           return response.json();
         })
         .then(data => {
+          if (typeof data.count !== 'number') {
+            throw new Error('Invalid data format from server');
+          }
           console.log('Fetched count from server:', data.count);
           if (!odometerInitialized) {
             initializeOdometer(data.count);
@@ -178,14 +181,14 @@
         })
         .then(data => {
           console.log(`Incremented count by ${amount} to:`, data.count);
-          lastIncrementTime = currentTime; 
+          lastIncrementTime = currentTime;
           setTimeout(() => {
-            button.disabled = false; 
+            button.disabled = false;
           }, cooldownPeriod);
         })
         .catch(error => {
           console.error(`Error updating count by ${amount} on the server:`, error);
-          button.disabled = false; 
+          button.disabled = false;
         });
     }
 
@@ -220,17 +223,6 @@
     });
 
     setInterval(fetchCount, 2000);
-
-    fetchCount().then(() => {
-      increment10Button.disabled = false;
-      increment100Button.disabled = false;
-      increment1000Button.disabled = false;
-      increment5000Button.disabled = false;
-      increment10000Button.disabled = false;
-      increment50000Button.disabled = false;
-      increment100000Button.disabled = false;
-      increment500000Button.disabled = false;
-    });
   </script>
 </body>
 </html>
