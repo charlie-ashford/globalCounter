@@ -126,17 +126,41 @@
         .catch(error => console.error('Error fetching count:', error));
     }
 
-    let errorTimeout;
+    let errorMessageTimeout;
+    let errorHideTimeout;
     
-    function displayError(message) {
-      if (errorTimeout) {
-        clearTimeout(errorTimeout);
+    function displayError(message, remainingTime) {
+      if (errorMessageTimeout) {
+        clearInterval(errorMessageTimeout);
       }
-      errorMessageElement.innerText = message;
+      if (errorHideTimeout) {
+        clearTimeout(errorHideTimeout);
+      }
+    
+      function formatTime(milliseconds) {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${hours > 0 ? hours + ' hours, ' : ''}${minutes > 0 ? minutes + ' minutes, ' : ''}${seconds} seconds`;
+      }
+    
+      errorMessageElement.innerText = `${message} (${formatTime(remainingTime)})`;
       errorMessageElement.style.display = 'block';
-      errorTimeout = setTimeout(() => {
+    
+      errorMessageTimeout = setInterval(() => {
+        remainingTime -= 1000;
+        if (remainingTime <= 0) {
+          clearInterval(errorMessageTimeout);
+        } else {
+          errorMessageElement.innerText = `${message} (${formatTime(remainingTime)})`;
+        }
+      }, 1000);
+    
+      errorHideTimeout = setTimeout(() => {
         errorMessageElement.style.display = 'none';
-      }, 15000); 
+        clearInterval(errorMessageTimeout);
+      }, 15000);
     }
     
     function incrementCount(amount, button) {
@@ -151,7 +175,9 @@
         .then(response => response.json())
         .then(data => {
           if (data.error) {
-            displayError(data.error);
+            const remainingTimeMatch = data.error.match(/(\d+) seconds/);
+            const remainingTime = remainingTimeMatch ? parseInt(remainingTimeMatch[1]) * 1000 : 0;
+            displayError(data.error, remainingTime);
           } else {
             updateCount(data.count);
           }
