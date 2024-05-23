@@ -30,6 +30,7 @@
       justify-content: center;
       gap: 1rem;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
     button {
       font-family: 'Inter', sans-serif;
@@ -49,31 +50,49 @@
       background-color: #9fa8da;
       cursor: not-allowed;
     }
+    .error-message {
+      color: #ff5252;
+      margin-top: 1rem;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="odometer" id="count">0</div>
+    <div class="odometer" id="count"></div>
     <div class="button-row">
       <button id="increment">Add 1</button>
       <button id="increment-10">Add 10</button>
       <button id="increment-100">Add 100</button>
-    </div>
-    <div class="button-row">
       <button id="increment-1000">Add 1,000</button>
       <button id="increment-5000">Add 5,000</button>
       <button id="increment-10000">Add 10,000</button>
+      <button id="increment-25000">Add 25,000</button>
+      <button id="increment-50000">Add 50,000</button>
+      <button id="increment-75000">Add 75,000</button>
+      <button id="increment-100000">Add 100,000</button>
+      <button id="increment-500000">Add 500,000</button>
     </div>
+    <div class="error-message" id="error-message"></div>
   </div>
   <script src="https://github.hubspot.com/odometer/odometer.js"></script>
   <script>
     const countElement = document.getElementById('count');
-    const incrementButton = document.getElementById('increment');
-    const increment10Button = document.getElementById('increment-10');
-    const increment100Button = document.getElementById('increment-100');
-    const increment1000Button = document.getElementById('increment-1000');
-    const increment5000Button = document.getElementById('increment-5000');
-    const increment10000Button = document.getElementById('increment-10000');
+    const errorMessageElement = document.getElementById('error-message');
+    const buttons = [
+      { id: 'increment', amount: 1 },
+      { id: 'increment-10', amount: 10 },
+      { id: 'increment-100', amount: 100 },
+      { id: 'increment-1000', amount: 1000 },
+      { id: 'increment-5000', amount: 5000 },
+      { id: 'increment-10000', amount: 10000 },
+      { id: 'increment-25000', amount: 25000 },
+      { id: 'increment-50000', amount: 50000 },
+      { id: 'increment-75000', amount: 75000 },
+      { id: 'increment-100000', amount: 100000 },
+      { id: 'increment-500000', amount: 500000 }
+    ];
+
     let odometerInitialized = false;
 
     function initializeOdometer(initialCount) {
@@ -98,6 +117,14 @@
         .catch(error => console.error('Error fetching count:', error));
     }
 
+    function displayError(message) {
+      errorMessageElement.innerText = message;
+      errorMessageElement.style.display = 'block';
+      setTimeout(() => {
+        errorMessageElement.style.display = 'none';
+      }, 3000);
+    }
+
     function incrementCount(amount, button) {
       button.disabled = true;
       fetch('https://api.communitrics.com/counter', {
@@ -110,7 +137,7 @@
         .then(response => response.json())
         .then(data => {
           if (data.error) {
-            alert(data.error);
+            displayError(data.error);
           } else {
             updateCount(data.count);
           }
@@ -121,13 +148,12 @@
         });
     }
 
-    incrementButton.addEventListener('click', () => incrementCount(1, incrementButton));
-    increment10Button.addEventListener('click', () => incrementCount(10, increment10Button));
-    increment100Button.addEventListener('click', () => incrementCount(100, increment100Button));
-    increment1000Button.addEventListener('click', () => incrementCount(1000, increment1000Button));
-    increment5000Button.addEventListener('click', () => incrementCount(5000, increment5000Button));
-    increment10000Button.addEventListener('click', () => incrementCount(10000, increment10000Button));
+    buttons.forEach(buttonInfo => {
+      const button = document.getElementById(buttonInfo.id);
+      button.addEventListener('click', () => incrementCount(buttonInfo.amount, button));
+    });
 
+    fetchCount();
     setInterval(fetchCount, 2000);
   </script>
 </body>
