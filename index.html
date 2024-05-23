@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Counter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://github.hubspot.com/odometer/themes/odometer-theme-minimal.css">
   <style>
     body {
@@ -22,10 +19,6 @@
     }
     .container {
       text-align: center;
-    }
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 1rem;
     }
     .odometer {
       font-size: 6rem;
@@ -56,20 +49,6 @@
       background-color: #9fa8da;
       cursor: not-allowed;
     }
-    a {
-      text-decoration: underline;
-      color: inherit;
-      font-weight: bold;
-    }
-    .source-link {
-      margin-top: 10px;
-    }
-    @media (prefers-color-scheme: light) {
-      body {
-        background-color: #f0f0f0;
-        color: #121212;
-      }
-    }
   </style>
 </head>
 <body>
@@ -83,15 +62,7 @@
     <div class="button-row">
       <button id="increment-1000">Add 1,000</button>
       <button id="increment-5000">Add 5,000</button>
-      <button id="increment-50000">Add 50,000</button>
-    </div>
-    <div class="button-row">
       <button id="increment-10000">Add 10,000</button>
-      <button id="increment-100000">Add 100,000</button>
-      <button id="increment-500000">Add 500,000</button>
-    </div>
-    <div class="source-link">
-      An <a href="https://github.com/charlie-ashford/globalCounter" target="_blank" rel="noopener noreferrer">open-source</a> global counter
     </div>
   </div>
   <script src="https://github.hubspot.com/odometer/odometer.js"></script>
@@ -103,124 +74,59 @@
     const increment1000Button = document.getElementById('increment-1000');
     const increment5000Button = document.getElementById('increment-5000');
     const increment10000Button = document.getElementById('increment-10000');
-    const increment50000Button = document.getElementById('increment-50000');
-    const increment100000Button = document.getElementById('increment-100000');
-    const increment500000Button = document.getElementById('increment-500000');
     let odometerInitialized = false;
-    let lastIncrementTime = 0;
-    const cooldowns = {
-      'increment-10': 5000, 
-      'increment-100': 10000, 
-      'increment-1000': 30000, 
-      'increment-5000': 60000,
-      'increment-10000': 120000,
-      'increment-50000': 300000, 
-      'increment-100000': 600000, 
-      'increment-500000': 1800000 
-    };
 
     function initializeOdometer(initialCount) {
-      console.log('Initializing odometer with count:', initialCount);
       countElement.innerHTML = initialCount;
       odometerInitialized = true;
     }
 
     function updateCount(newCount) {
-      console.log('Updating count to:', newCount);
       countElement.innerHTML = newCount;
     }
 
     function fetchCount() {
-      fetch('https://api.communitrics.com/counter')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
+      fetch('https://api.yoursite.com/counter')
+        .then(response => response.json())
         .then(data => {
-          if (typeof data.count !== 'number') {
-            throw new Error('Invalid data format from server');
-          }
-          console.log('Fetched count from server:', data.count);
           if (!odometerInitialized) {
             initializeOdometer(data.count);
           } else {
             updateCount(data.count);
           }
         })
-        .catch(error => {
-          console.error('Error getting count from the server:', error);
-        });
+        .catch(error => console.error('Error fetching count:', error));
     }
 
     function incrementCount(amount, button) {
-      const currentTime = Date.now();
-      const timeSinceLastIncrement = currentTime - lastIncrementTime;
-
-      const cooldownPeriod = cooldowns[`increment-${amount}`];
-      if (timeSinceLastIncrement < cooldownPeriod) {
-        console.log(`Cooldown period for ${amount} increment has not elapsed.`);
-        return;
-      }
-
-      button.disabled = true; 
-
-      fetch('https://api.communitrics.com/counter', {
+      button.disabled = true;
+      fetch('https://api.yoursite.com/counter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ action: 'increment', amount: amount })
       })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-          console.log(`Incremented count by ${amount} to:`, data.count);
-          lastIncrementTime = currentTime;
-          setTimeout(() => {
-            button.disabled = false;
-          }, cooldownPeriod);
+          if (data.error) {
+            alert(data.error);
+          } else {
+            updateCount(data.count);
+          }
         })
-        .catch(error => {
-          console.error(`Error updating count by ${amount} on the server:`, error);
+        .catch(error => console.error(`Error incrementing count by ${amount}:`, error))
+        .finally(() => {
           button.disabled = false;
         });
     }
 
-    fetchCount();
-
-    incrementButton.addEventListener('click', () => {
-      incrementCount(1, incrementButton);
-    });
-    increment10Button.addEventListener('click', () => {
-      incrementCount(10, increment10Button);
-    });
-    increment100Button.addEventListener('click', () => {
-      incrementCount(100, increment100Button);
-    });
-    increment1000Button.addEventListener('click', () => {
-      incrementCount(1000, increment1000Button);
-    });
-    increment5000Button.addEventListener('click', () => {
-      incrementCount(5000, increment5000Button);
-    });
-    increment10000Button.addEventListener('click', () => {
-      incrementCount(10000, increment10000Button);
-    });
-    increment50000Button.addEventListener('click', () => {
-      incrementCount(50000, increment50000Button);
-    });
-    increment100000Button.addEventListener('click', () => {
-      incrementCount(100000, increment100000Button);
-    });
-    increment500000Button.addEventListener('click', () => {
-      incrementCount(500000, increment500000Button);
-    });
+    incrementButton.addEventListener('click', () => incrementCount(1, incrementButton));
+    increment10Button.addEventListener('click', () => incrementCount(10, increment10Button));
+    increment100Button.addEventListener('click', () => incrementCount(100, increment100Button));
+    increment1000Button.addEventListener('click', () => incrementCount(1000, increment1000Button));
+    increment5000Button.addEventListener('click', () => incrementCount(5000, increment5000Button));
+    increment10000Button.addEventListener('click', () => incrementCount(10000, increment10000Button));
 
     setInterval(fetchCount, 2000);
   </script>
