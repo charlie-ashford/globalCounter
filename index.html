@@ -93,88 +93,97 @@
       const countElement = document.getElementById('count');
       const errorMessageElement = document.getElementById('error-message');
       const buttons = [
-        { id: 'increment-1', amount: 1 },
-        { id: 'increment-100', amount: 100 },
-        { id: 'increment-1000', amount: 1000 },
-        { id: 'increment-10000', amount: 10000 },
-        { id: 'increment-50000', amount: 50000 },
-        { id: 'increment-100000', amount: 100000 },
-        { id: 'increment-500000', amount: 500000 },
-        { id: 'increment-1000000', amount: 1000000 }
-      ];
+      { id: 'increment-1', amount: 1 },
+      { id: 'increment-100', amount: 100 },
+      { id: 'increment-1000', amount: 1000 },
+      { id: 'increment-10000', amount: 10000 },
+      { id: 'increment-50000', amount: 50000 },
+      { id: 'increment-100000', amount: 100000 },
+      { id: 'increment-500000', amount: 500000 },
+      { id: 'increment-1000000', amount: 1000000 }
+    ];
 
-      let odometerInitialized = false;
-      let errorMessageTimeout;
-      let errorHideTimeout;
+    let odometerInitialized = false;
+    let errorMessageTimeout;
+    let errorHideTimeout;
 
-      function initializeOdometer(initialCount) {
-        countElement.innerHTML = initialCount;
-        odometerInitialized = true;
-      }
+    let currentCount = 0;
 
-      function updateCount(newCount) {
-        countElement.innerHTML = newCount;
-      }
+    function initializeOdometer(initialCount) {
+      currentCount = initialCount;
+      countElement.innerHTML = initialCount;
+      odometerInitialized = true;
+    }
 
-      function fetchCount() {
-        fetch('https://api.communitrics.com/counter')
-          .then(response => response.json())
-          .then(data => {
-            if (!odometerInitialized) {
-              initializeOdometer(data.count);
-            } else {
-              updateCount(data.count);
-            }
-          })
-          .catch(error => console.error('Error fetching count:', error));
-      }
+    function updateCount(newCount) {
+      currentCount = newCount;
+      countElement.innerHTML = newCount;
+    }
 
-      let errorTimeout;
-      
-      function displayError(message) {
-        if (errorTimeout) {
-          clearTimeout(errorTimeout);
-        }
-        errorMessageElement.innerText = message;
-        errorMessageElement.style.display = 'block';
-        errorTimeout = setTimeout(() => {
-          errorMessageElement.style.display = 'none';
-        }, 15000); 
-      }
-    
-      function incrementCount(amount, button) {
-        button.disabled = true;
-        fetch('https://api.communitrics.com/counter', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ action: 'increment', amount: amount })
+    function fetchCount() {
+      fetch('https://api.communitrics.com/counter')
+        .then(response => response.json())
+        .then(data => {
+          if (!odometerInitialized) {
+            initializeOdometer(data.count);
+          } else {
+            currentCount = data.count; 
+          }
         })
-          .then(response => response.json())
-          .then(data => {
-            if (data.error) {
-              const remainingTimeMatch = data.error.match(/(\d+) seconds/);
-              const remainingTime = remainingTimeMatch ? parseInt(remainingTimeMatch[1]) * 1000 : 0;
-              displayError(data.error, remainingTime);
-            } else {
-              updateCount(data.count);
-            }
-          })
-          .catch(error => console.error(`Error incrementing count by ${amount}:`, error))
-          .finally(() => {
-            button.disabled = false;
-          });
+        .catch(error => console.error('Error fetching count:', error));
+    }
+
+    function refreshOdometer() {
+      countElement.innerHTML = currentCount; 
+    }
+
+    let errorTimeout;
+
+    function displayError(message) {
+      if (errorTimeout) {
+        clearTimeout(errorTimeout);
       }
+      errorMessageElement.innerText = message;
+      errorMessageElement.style.display = 'block';
+      errorTimeout = setTimeout(() => {
+        errorMessageElement.style.display = 'none';
+      }, 15000); 
+    }
 
-      buttons.forEach(buttonInfo => {
-        const button = document.getElementById(buttonInfo.id);
-        button.addEventListener('click', () => incrementCount(buttonInfo.amount, button));
-      });
+    function incrementCount(amount, button) {
+      button.disabled = true;
+      fetch('https://api.communitrics.com/counter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'increment', amount: amount })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            const remainingTimeMatch = data.error.match(/(\d+) seconds/);
+            const remainingTime = remainingTimeMatch ? parseInt(remainingTimeMatch[1]) * 1000 : 0;
+            displayError(data.error, remainingTime);
+          } else {
+            currentCount = data.count; 
+          }
+        })
+        .catch(error => console.error(`Error incrementing count by ${amount}:`, error))
+        .finally(() => {
+          button.disabled = false;
+        });
+    }
 
-      fetchCount();
-      setInterval(fetchCount, 2000);
-    })();
-  </script>
+    buttons.forEach(buttonInfo => {
+      const button = document.getElementById(buttonInfo.id);
+      button.addEventListener('click', () => incrementCount(buttonInfo.amount, button));
+    });
+
+    fetchCount();
+    setInterval(fetchCount, 2000); 
+    setInterval(refreshOdometer, 2000); 
+  })();
+</script>
 </body>
 </html>
