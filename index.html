@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
     <title>Global Counter</title>
     <link
       rel="stylesheet"
@@ -17,69 +20,83 @@
       href="https://api.communitrics.com/youtube/profile?channel=communitrics"
       type="image/png"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
       :root {
-        --bg-color: #000000;
-        --surface-color: #111111;
-        --button-color: #1a1a1a;
-        --text-color: #ffffff;
+        --bg-color: #121212;
+        --surface-color: #1f1f1f;
+        --accent-color: #4f46e5;
+        --button-color: #2d2d2d;
+        --button-hover-color: #3e3e3e;
+        --text-color: #f8f8f8;
         --border-color: rgba(255, 255, 255, 0.1);
+        --transition-speed: 200ms;
       }
 
       body {
         font-family: 'Inter', sans-serif;
-        background-color: var(--bg-color);
-        min-height: 100vh;
-        color: var(--text-color);
-      }
-
-      .odometer {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700;
-        line-height: 1;
-        color: var(--text-color);
-      }
-
-      .btn {
-        background-color: var(--button-color);
-        border: 1px solid var(--border-color);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .btn:hover {
-        transform: translateY(-1px);
-        background-color: #222222;
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      .btn:active {
-        transform: translateY(1px);
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
+        background: linear-gradient(135deg, #121212 0%, #1f1f1f 100%);
       }
 
       .counter-container {
-        background: var(--surface-color);
+        background-color: var(--surface-color);
         border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .expand {
+        animation: expandContainer 0.3s forwards;
       }
 
-      .error-message {
-        animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      .odometer {
+        color: var(--text-color);
+        transition: font-size 0.3s ease;
       }
 
-      @keyframes slideIn {
+      .btn-base {
+        background-color: var(--button-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        transition: background-color var(--transition-speed),
+          border-color var(--transition-speed),
+          transform var(--transition-speed);
+      }
+      .btn-base:hover {
+        transform: translateY(-1px);
+        background-color: var(--button-hover-color);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      .btn-base:focus-visible {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+      }
+      .btn-base:active {
+        transform: translateY(2px);
+      }
+      .btn-base:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+      @keyframes fadeIn {
         from {
-          transform: translateY(-10px);
           opacity: 0;
         }
         to {
-          transform: translateY(0);
           opacity: 1;
         }
       }
@@ -88,7 +105,6 @@
         position: relative;
         text-decoration: none;
       }
-
       .link::after {
         content: '';
         position: absolute;
@@ -101,189 +117,188 @@
         transform-origin: right;
         transition: transform 0.3s ease;
       }
-
       .link:hover::after {
         transform: scaleX(1);
         transform-origin: left;
       }
     </style>
   </head>
-  <body class="flex items-center justify-center p-4 min-h-screen">
+  <body class="min-h-screen flex items-center justify-center p-6">
     <div
-      class="counter-container max-w-4xl w-full mx-auto rounded-2xl p-8 sm:p-12"
+      id="counter-container"
+      class="counter-container max-w-3xl mx-auto p-8 space-y-8 text-center"
     >
-      <div class="text-center">
+      <section aria-live="polite">
         <div
-          class="odometer text-6xl sm:text-7xl md:text-8xl xl:text-9xl mb-12 tracking-tight"
           id="count"
+          class="odometer text-white font-extrabold text-5xl sm:text-7xl"
         ></div>
+      </section>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+      <section>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <button
             id="increment-1"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="1"
+            class="increment-btn btn-base"
           >
             +1
           </button>
           <button
             id="increment-100"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="100"
+            class="increment-btn btn-base"
           >
             +100
           </button>
           <button
             id="increment-1000"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="1000"
+            class="increment-btn btn-base"
           >
             +1,000
           </button>
           <button
             id="increment-10000"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="10000"
+            class="increment-btn btn-base"
           >
             +10,000
           </button>
           <button
             id="increment-50000"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="50000"
+            class="increment-btn btn-base"
           >
             +50,000
           </button>
           <button
             id="increment-100000"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="100000"
+            class="increment-btn btn-base"
           >
             +100,000
           </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-8">
           <button
             id="increment-500000"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="500000"
+            class="increment-btn btn-base"
           >
             +500,000
           </button>
           <button
             id="increment-1000000"
-            class="btn text-sm sm:text-base font-medium py-4 px-6 rounded-xl"
+            data-amount="1000000"
+            class="increment-btn btn-base"
           >
             +1,000,000
           </button>
         </div>
+      </section>
 
-        <div
+      <section>
+        <p
           id="error-message"
-          class="hidden bg-red-900/20 border border-red-800/30 text-red-400 p-4 rounded-xl mb-6 text-sm"
-        ></div>
+          class="text-sm text-red-500 opacity-0"
+          role="alert"
+        ></p>
+      </section>
 
-        <div class="text-sm text-gray-500">
-          An
-          <a
-            href="https://github.com/charlie-ashford/global-clicker"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="link text-gray-400 transition-colors"
-            >open-source</a
-          >
-          global clicker
-        </div>
-      </div>
+      <footer class="text-sm text-gray-400">
+        An
+        <a
+          href="https://github.com/charlie-ashford/global-clicker"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link text-gray-400 transition-colors"
+          >open-source</a
+        >
+        global clicker.
+      </footer>
     </div>
 
     <script src="https://github.hubspot.com/odometer/odometer.js"></script>
-    <script>
+    <script type="text/javascript">
       (() => {
-        const countElement = document.getElementById('count');
-        const errorMessageElement = document.getElementById('error-message');
-        const buttons = [
-          { id: 'increment-1', amount: 1 },
-          { id: 'increment-100', amount: 100 },
-          { id: 'increment-1000', amount: 1000 },
-          { id: 'increment-10000', amount: 10000 },
-          { id: 'increment-50000', amount: 50000 },
-          { id: 'increment-100000', amount: 100000 },
-          { id: 'increment-500000', amount: 500000 },
-          { id: 'increment-1000000', amount: 1000000 },
-        ];
-
-        let odometerInitialized = false;
+        const countEl = document.getElementById('count');
+        const errorEl = document.getElementById('error-message');
+        const container = document.getElementById('counter-container');
+        const buttons = document.querySelectorAll('.increment-btn');
         let currentCount = 0;
+        const API_URL = 'https://api.communitrics.com/counter';
 
-        function initializeOdometer(initialCount) {
-          currentCount = initialCount;
-          countElement.innerHTML = initialCount;
-          odometerInitialized = true;
-        }
+        const updateDisplay = newCount => {
+          const oldLength = countEl.innerText.length;
+          const newLength = String(newCount).length;
+          if (newLength !== oldLength) {
+            container.classList.add('expand');
+            setTimeout(() => {
+              container.classList.remove('expand');
+            }, 300);
+          }
+          countEl.innerText = newCount;
+        };
 
-        function updateCount(newCount) {
-          currentCount = newCount;
-          countElement.innerHTML = newCount;
-        }
-
-        function fetchCount() {
-          fetch('https://api.communitrics.com/counter')
-            .then(response => response.json())
+        const fetchCount = () => {
+          fetch(API_URL)
+            .then(res => res.json())
             .then(data => {
-              if (!odometerInitialized) {
-                initializeOdometer(data.count);
-              } else {
-                currentCount = data.count;
-              }
+              currentCount = data.count;
+              updateDisplay(currentCount);
             })
-            .catch(error => console.error('Error fetching count:', error));
-        }
+            .catch(err => console.error('Error fetching count:', err));
+        };
 
-        function refreshOdometer() {
-          countElement.innerHTML = currentCount;
-        }
-
-        function displayError(message) {
-          errorMessageElement.textContent = message;
-          errorMessageElement.classList.remove('hidden');
-          setTimeout(() => {
-            errorMessageElement.classList.add('hidden');
-          }, 15000);
-        }
-
-        function incrementCount(amount, button) {
+        const incrementCount = (amount, button) => {
           button.disabled = true;
-          fetch('https://api.communitrics.com/counter', {
+          fetch(API_URL, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ action: 'increment', amount: amount }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'increment',
+              amount,
+            }),
           })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
               if (data.error) {
-                displayError(data.error);
+                showError(data.error);
               } else {
                 currentCount = data.count;
+                updateDisplay(currentCount);
+                hideError();
               }
             })
-            .catch(error => {
-              console.error(`Error incrementing count by ${amount}:`, error);
-              displayError('An error occurred. Please try again.');
+            .catch(err => {
+              console.error('Error incrementing count:', err);
+              showError('An error occurred. Please try again.');
             })
             .finally(() => {
-              setTimeout(() => {
-                button.disabled = false;
-              }, 300);
+              setTimeout(() => (button.disabled = false), 300);
             });
-        }
+        };
 
-        buttons.forEach(buttonInfo => {
-          const button = document.getElementById(buttonInfo.id);
-          button.addEventListener('click', () =>
-            incrementCount(buttonInfo.amount, button)
-          );
+        const showError = message => {
+          errorEl.innerText = message;
+          errorEl.classList.remove('opacity-0');
+          errorEl.classList.add('fade-in');
+        };
+
+        const hideError = () => {
+          errorEl.textContent = '';
+          errorEl.classList.remove('fade-in');
+          errorEl.classList.add('opacity-0');
+        };
+
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const amount = parseInt(btn.dataset.amount, 10);
+            incrementCount(amount, btn);
+          });
         });
 
         fetchCount();
         setInterval(fetchCount, 2000);
-        setInterval(refreshOdometer, 2000);
       })();
     </script>
   </body>
